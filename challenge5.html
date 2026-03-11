@@ -98,7 +98,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const selectedBet = parseInt(urlParams.get('mise')) || 0;
-        const challengeId = 7; // Identifiant forcé pour correspondre à ton menu
+        const challengeId = 5; // Identifiant forcé pour correspondre à ton menu
         
         let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
         document.getElementById('current-score').innerText = scoreInitial;
@@ -148,4 +148,5 @@
         }
     </script>
 </body>
+
 </html>
