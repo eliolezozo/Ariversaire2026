@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -16,6 +16,8 @@
         .challenge-card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
         .point-chip.used { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; pointer-events: none; }
         .point-chip.selected { border: 2px solid var(--primary); background: rgba(99, 102, 241, 0.2); }
+
+        .admin-controls { margin-top: 40px; display: flex; justify-content: center; gap: 10px; }
 
         @media (max-width: 768px) {
             .grid { grid-template-columns: 1fr; }
@@ -36,7 +38,11 @@
         <p>Mise sélectionnée : <span id="display-bet" style="color:var(--primary); font-weight:bold;">Aucune</span></p>
         <div class="grid" id="challenge-grid"></div>
         <div class="points-container" id="points-chips"></div>
-        <button class="nav-btn" style="margin-top:40px; background:var(--danger); font-size: 0.8rem;" onclick="resetGame()">Réinitialiser la partie</button>
+        
+        <div class="admin-controls">
+            <button class="nav-btn" style="background:var(--success);" onclick="addBonusPoints(350)">🎁 Ajouter 350 points</button>
+            <button class="nav-btn" style="background:var(--danger); font-size: 0.8rem;" onclick="resetGame()">Réinitialiser la partie</button>
+        </div>
     </section>
 
     <script>
@@ -71,7 +77,6 @@
                 div.innerText = ch.name;
                 div.onclick = () => {
                     if (isDone || selectedBet === null) return;
-                    // AJOUT de l'ID dans l'URL pour que le challenge sache qui il est
                     window.location.href = `challenge${ch.id}.html?mise=${selectedBet}&id=${ch.id}`;
                 };
                 grid.appendChild(div);
@@ -97,6 +102,14 @@
             });
         }
 
+        // FONCTION POUR AJOUTER LES POINTS
+        function addBonusPoints(amount) {
+            score += amount;
+            localStorage.setItem('score', score);
+            document.getElementById('current-score').innerText = score;
+            alert(amount + " points ajoutés !");
+        }
+
         function allerAuxRoues() {
             window.location.href = `roues.html?score=${localStorage.getItem('score')}`;
         }
@@ -116,6 +129,4 @@
         renderChips();
     </script>
 </body>
-
 </html>
-
