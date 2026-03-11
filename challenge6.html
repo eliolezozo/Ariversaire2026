@@ -1,0 +1,186 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 6 - Geoguessr Gaming</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        .map-wrapper {
+            height: 600px; 
+            width: 100%;
+            background: #0f172a; 
+            border: 2px solid var(--primary);
+            border-radius: 15px;
+            margin: 20px 0;
+            cursor: crosshair;
+        }
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        video {
+            width: 100%;
+            border-radius: 15px;
+            border: 1px solid var(--primary);
+            margin-bottom: 20px;
+        }
+        .recap-box {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid var(--primary);
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #6 : Geoguessr Gaming</h1>
+
+        <div id="video-section">
+            <video id="geo-video" controls muted>
+                <source src="kcd2where.mp4" type="video/mp4">
+            </video>
+            <div class="instructions">
+                <p><strong>Mission :</strong> Observe la vidéo, puis place un marqueur sur la carte. Si tu es dans la zone (rayon de 200px), tu gagnes ta mise !</p>
+            </div>
+        </div>
+
+        <div id="maps-container">
+            <h3 style="text-align:left; color:var(--primary);">Carte : Trosky</h3>
+            <div id="map-trosky" class="map-wrapper"></div>
+            
+            <h3 style="text-align:left; color:var(--primary); margin-top:40px;">Carte : Kuttenberg</h3>
+            <div id="map-kuttenberg" class="map-wrapper"></div>
+        </div>
+
+        <button id="btn-validate" class="nav-btn" style="background:var(--success); width:100%; margin-top: 20px;" onclick="validateGuess()">Valider mon placement</button>
+
+        <div id="recap-area" style="display:none;">
+            <div class="recap-box">
+                <h3>Bilan du Challenge</h3>
+                <div id="final-math-6" style="text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0;"></div>
+                <button class="nav-btn" style="width:100%;" onclick="finishChallenge()">Enregistrer et Quitter</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = 6; // Identifiant mis à jour
+        
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        // CIBLE : Trosky (1383, 2233)
+        const targetX = 1383;
+        const targetY = 2233;
+        const radiusGagnant = 200; 
+
+        let currentMarker = null;
+        let finalGain = 0;
+        let troskyHeight = 0;
+
+        const mapTrosky = L.map('map-trosky', { crs: L.CRS.Simple, minZoom: -3 });
+        const mapKuttenberg = L.map('map-kuttenberg', { crs: L.CRS.Simple, minZoom: -3 });
+
+        // Chargement des fonds de carte
+        const imgT = new Image();
+        imgT.onload = function() {
+            troskyHeight = this.height;
+            const bounds = [[0, 0], [this.height, this.width]];
+            L.imageOverlay('kcd2maptrosky.jpeg', bounds).addTo(mapTrosky);
+            mapTrosky.fitBounds(bounds);
+        };
+        imgT.src = 'kcd2maptrosky.jpeg';
+
+        const imgK = new Image();
+        imgK.onload = function() {
+            const bounds = [[0, 0], [this.height, this.width]];
+            L.imageOverlay('kcd2mapkuttenberg.jpeg', bounds).addTo(mapKuttenberg);
+            mapKuttenberg.fitBounds(bounds);
+        };
+        imgK.src = 'kcd2mapkuttenberg.jpeg';
+
+        function onMapClick(e, m) {
+            if (document.getElementById('recap-area').style.display === 'block') return;
+            if (currentMarker) currentMarker.remove();
+            currentMarker = L.marker(e.latlng).addTo(m);
+            currentMarker.mapInstance = m;
+        }
+
+        mapTrosky.on('click', (e) => onMapClick(e, mapTrosky));
+        mapKuttenberg.on('click', (e) => onMapClick(e, mapKuttenberg));
+
+        function validateGuess() {
+            if (!currentMarker) { alert("Place un point sur l'une des cartes !"); return; }
+
+            const isTrosky = (currentMarker.mapInstance === mapTrosky);
+            const pos = currentMarker.getLatLng();
+            let distance = 999999;
+
+            if (isTrosky) {
+                const realX = pos.lng;
+                const realY = troskyHeight - pos.lat; 
+                distance = Math.sqrt(Math.pow(realX - targetX, 2) + Math.pow(realY - targetY, 2));
+            }
+
+            const win = (distance <= radiusGagnant);
+            let ptsChallenge = win ? 150 : Math.max(0, 100 - (Math.floor(Math.max(0, distance - radiusGagnant) / 100) * 10));
+            
+            finalGain = ptsChallenge + (win ? selectedBet : -selectedBet);
+
+            // Révélation
+            const solLatLng = [troskyHeight - targetY, targetX];
+            L.circle(solLatLng, { color: '#10b981', weight: 2, fillColor: '#10b981', fillOpacity: 0.3, radius: radiusGagnant }).addTo(mapTrosky);
+            
+            if (isTrosky) {
+                L.polyline([pos, solLatLng], {color: '#6366f1', weight: 3, dashArray: '10, 10'}).addTo(mapTrosky);
+            }
+
+            // UI Update
+            document.getElementById('video-section').style.display = 'none';
+            document.getElementById('map-kuttenberg').style.display = 'none';
+            document.querySelectorAll('h3')[1].style.display = 'none'; 
+            document.getElementById('btn-validate').style.display = 'none';
+            document.getElementById('recap-area').style.display = 'block';
+
+            document.getElementById('final-math-6').innerHTML = `
+                Distance : ${isTrosky ? Math.round(distance) + 'px' : 'N/A (Mauvaise carte)'}<br>
+                Points Challenge : +${ptsChallenge} pts<br>
+                Mise engagée : ${selectedBet} pts<br>
+                Statut : ${win ? '<span style="color:var(--success)">GAGNÉE</span>' : '<span style="color:var(--danger)">PERDUE</span>'}
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+                <strong>Gain Total : ${finalGain > 0 ? '+' : ''}${finalGain} pts</strong>
+            `;
+            
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + finalGain);
+            mapTrosky.flyTo(solLatLng, -1);
+        }
+
+        function finishChallenge() {
+            localStorage.setItem('score', Math.max(0, scoreInitial + finalGain));
+            
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

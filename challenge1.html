@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 1 - Geoguessr</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #1 : Geoguessr</h1>
+
+        <div id="game-content">
+            <p style="text-align: left; margin-bottom: 20px;">
+                Consigne : <br>
+                <a href="https://www.geoguessr.com/quiz/3540d43d-db4b-4bf7-a342-5d871c637b31?r=5b13e157faa4cf8f7cc2421a" 
+                   target="_blank" style="color: var(--primary); font-weight: bold;">
+                   Clique sur ce lien pour lancer le Geoguessr
+                </a>
+            </p>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; text-align: left;">
+                <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="check-villes" style="width: 20px; height: 20px;">
+                    <label for="check-villes">Challenge réussi ? (4 villes trouvées)</label>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label for="geo-score">Points faits sur Geoguessr / 20 000 :</label>
+                    <input type="number" id="geo-score" min="0" max="20000" 
+                           style="padding: 10px; border-radius: 5px; border: 1px solid var(--primary); background: #1a1a1a; color: white;">
+                </div>
+            </div>
+
+            <button class="nav-btn" style="width:100%; margin-top: 30px; background: var(--success);" onclick="validerResultats()">Valider les résultats</button>
+        </div>
+
+        <div id="recap-area" style="display:none;">
+            <div style="background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid var(--primary);">
+                <h3>Bilan du Challenge</h3>
+                <div id="final-math-1" style="text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0;"></div>
+                <button class="nav-btn" style="width:100%;" onclick="quitterChallenge()">Enregistrer et retourner au menu</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = parseInt(urlParams.get('id')) || 1; // On récupère l'ID envoyé par l'index
+        
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        let totalGainChallenge = 0;
+
+        function validerResultats() {
+            const reussi = document.getElementById('check-villes').checked;
+            const pointsGeo = parseInt(document.getElementById('geo-score').value) || 0;
+
+            if (pointsGeo > 20000) {
+                alert("Le score ne peut pas dépasser 20 000.");
+                return;
+            }
+
+            // Bonus : +10 pts par tranche de 100 au-dessus de 19000
+            let pointsBonus = 0;
+            if (pointsGeo > 19000) {
+                pointsBonus = Math.floor((pointsGeo - 19000) / 100) * 10;
+            }
+
+            // Calcul du gain final
+            // Si réussi : on gagne la mise + bonus
+            // Si raté : on perd la mise (mais on garde les bonus de score si il y en a)
+            let gainMise = reussi ? selectedBet : -selectedBet;
+            totalGainChallenge = pointsBonus + gainMise;
+
+            // Affichage recap
+            document.getElementById('game-content').style.display = 'none';
+            document.getElementById('recap-area').style.display = 'block';
+
+            document.getElementById('final-math-1').innerHTML = `
+                Mise engagée : ${selectedBet} pts<br>
+                Statut : ${reussi ? '<span style="color:var(--success)">RÉUSSI (+'+selectedBet+')</span>' : '<span style="color:var(--danger)">ÉCHOUÉ (-'+selectedBet+')</span>'}<br>
+                Bonus Score : +${pointsBonus} pts<hr>
+                <strong>Résultat net : ${totalGainChallenge > 0 ? '+' : ''}${totalGainChallenge} pts</strong>
+            `;
+            
+            // Mise à jour visuelle immédiate du score en haut
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + totalGainChallenge);
+        }
+
+        function quitterChallenge() {
+            // Sauvegarde définitive du nouveau score
+            localStorage.setItem('score', Math.max(0, scoreInitial + totalGainChallenge));
+            
+            // Marquer ce challenge comme fait
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            // Marquer cette mise comme utilisée
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

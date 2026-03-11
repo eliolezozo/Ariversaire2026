@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 2 - Guess the rent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #2 : Guess the rent</h1>
+
+        <div id="game-content">
+            <p style="text-align: left; margin-bottom: 20px;">
+                Consigne : <br>
+                <a href="https://www.rentguessr.fun/" 
+                   target="_blank" style="color: var(--primary); font-weight: bold;">
+                   Clique sur ce lien pour lancer le RentGuessr
+                </a>
+            </p>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; text-align: left;">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label for="rent-score">Combien de points / 50 000 ?</label>
+                    <input type="number" id="rent-score" min="0" max="50000" 
+                           style="padding: 10px; border-radius: 5px; border: 1px solid var(--primary); background: #1a1a1a; color: white;">
+                </div>
+            </div>
+
+            <button class="nav-btn" style="width:100%; margin-top: 30px; background: var(--success);" onclick="validerLoyer()">Valider les résultats</button>
+        </div>
+
+        <div id="recap-area" style="display:none;">
+            <div style="background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid var(--primary);">
+                <h3>Bilan du Challenge</h3>
+                <div id="final-math-2" style="text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0;"></div>
+                <button class="nav-btn" style="width:100%;" onclick="quitterChallenge()">Enregistrer et retourner au menu</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = parseInt(urlParams.get('id')) || 2; // Récupération de l'ID via l'URL
+
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        let totalGainChallenge = 0;
+
+        function validerLoyer() {
+            const pointsRent = parseInt(document.getElementById('rent-score').value) || 0;
+
+            if (pointsRent > 50000) {
+                alert("Le score maximum est de 50 000.");
+                return;
+            }
+
+            // Condition de réussite : 40 000 points
+            const reussi = (pointsRent >= 40000);
+            let gainMise = reussi ? selectedBet : -selectedBet;
+
+            // Bonus : +10 pts par tranche de 1000 au-dessus de 40 000
+            let pointsBonus = 0;
+            if (pointsRent > 40000) {
+                pointsBonus = Math.floor((pointsRent - 40000) / 1000) * 10;
+            }
+
+            totalGainChallenge = pointsBonus + gainMise;
+
+            // Affichage recap
+            document.getElementById('game-content').style.display = 'none';
+            document.getElementById('recap-area').style.display = 'block';
+
+            document.getElementById('final-math-2').innerHTML = `
+                Mise engagée : ${selectedBet} pts<br>
+                Statut : ${reussi ? '<span style="color:var(--success)">RÉUSSI (+'+selectedBet+')</span>' : '<span style="color:var(--danger)">ÉCHOUÉ (-'+selectedBet+')</span>'}<br>
+                Bonus Score (Tranche de 1000) : +${pointsBonus} pts<hr>
+                <strong>Résultat net : ${totalGainChallenge > 0 ? '+' : ''}${totalGainChallenge} pts</strong>
+            `;
+
+            // Mise à jour visuelle du score en haut
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + totalGainChallenge);
+        }
+
+        function quitterChallenge() {
+            // Sauvegarde du score final
+            localStorage.setItem('score', Math.max(0, scoreInitial + totalGainChallenge));
+            
+            // Marquage du challenge terminé
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            // Marquage de la mise utilisée
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

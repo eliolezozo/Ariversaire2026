@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 7 - Wiki Adventure</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .wiki-link {
+            color: #3b82f6;
+            text-decoration: underline;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .setup-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .admin-zone {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--primary);
+        }
+        .input-group {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 8px;
+            background: #0f172a;
+            border: 1px solid var(--primary);
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+        }
+        input[type="checkbox"] {
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #7 : Wiki Adventure</h1>
+
+        <div id="game-area">
+            <div class="setup-box">
+                <p>Départ : <a href="https://fr.wikipedia.org/wiki/Kingdom_Come:_Deliverance_II" target="_blank" class="wiki-link">Kingdom Come: Deliverance II</a></p>
+                <p>Arrivée : <strong>"Androïde"</strong></p>
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+                <p style="font-size: 0.9rem; color: #94a3b8;">
+                    <strong>Règles :</strong><br>
+                    • Cliquez uniquement sur les liens bleus.<br>
+                    • 10 clics ou moins pour gagner la mise.<br>
+                    • Chaque lien cliqué rapporte <strong>+10 points</strong>.<br>
+                    • Interdit : Recherche (CTRL+F) et retour arrière.
+                </p>
+            </div>
+
+            <div class="admin-zone">
+                <div class="input-group">
+                    <label>Objectif atteint en ≤ 10 coups ?</label>
+                    <input type="checkbox" id="check-success">
+                </div>
+
+                <div class="input-group">
+                    <label>Nombre de liens cliqués :</label>
+                    <input type="number" id="click-count" min="0" value="0">
+                </div>
+
+                <button class="nav-btn" style="background: var(--success); width: 100%;" onclick="calculateWikiScore()">Valider les résultats</button>
+            </div>
+        </div>
+
+        <div id="recap-area" style="display:none;">
+            <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; border: 2px solid var(--primary);">
+                <h3>Bilan du Challenge</h3>
+                <div id="final-math-7" style="text-align: left; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin: 20px 0;">
+                </div>
+                <button class="nav-btn" style="width:100%;" onclick="finishChallenge()">Enregistrer et Quitter</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = 7; // Identifiant forcé pour correspondre à ton menu
+        
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        let finalGain = 0;
+
+        function calculateWikiScore() {
+            const isSuccess = document.getElementById('check-success').checked;
+            const clicks = parseInt(document.getElementById('click-count').value) || 0;
+            
+            // Calcul : 10 pts par clic + gain ou perte de la mise
+            const pointsFromClicks = clicks * 10;
+            const betResult = isSuccess ? selectedBet : -selectedBet;
+            
+            finalGain = pointsFromClicks + betResult;
+
+            document.getElementById('game-area').style.display = 'none';
+            document.getElementById('recap-area').style.display = 'block';
+
+            document.getElementById('final-math-7').innerHTML = `
+                Points de parcours (${clicks} clics) : +${pointsFromClicks} pts<br>
+                Mise engagée : ${selectedBet} pts<br>
+                Statut : ${isSuccess ? '<span style="color:var(--success)">RÉUSSI (+'+selectedBet+')</span>' : '<span style="color:var(--danger)">ÉCHOUÉ (-'+selectedBet+')</span>'}
+                <hr style="border: 0.5px solid #475569; margin: 10px 0;">
+                <strong>Gain Total : ${finalGain > 0 ? '+' : ''}${finalGain} pts</strong>
+            `;
+
+            // Mise à jour visuelle du score en haut
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + finalGain);
+        }
+
+        function finishChallenge() {
+            // Sauvegarde du score
+            localStorage.setItem('score', Math.max(0, scoreInitial + finalGain));
+            
+            // Marquer le challenge 7 comme complété
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            // Marquer la mise comme utilisée
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

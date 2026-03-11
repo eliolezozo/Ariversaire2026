@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 4 - Pictionary</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1 id="draw-title">Dessin N°1</h1>
+        <div style="background: var(--card-bg); padding: 30px; border-radius: 15px; margin-top: 20px;">
+            <h2 style="color: var(--primary);">Points à gagner : <span id="potential-points">50</span></h2>
+            <p id="total-guesses-tracker" style="font-size: 0.9rem; opacity: 0.7;">Total guesses : 0 / 15</p>
+            
+            <div id="guess-container">
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <input type="text" id="draw-input" placeholder="Ton guess..." autocomplete="off" onkeypress="if(event.key === 'Enter') submitGuess()">
+                    <button class="nav-btn" style="background: var(--success);" onclick="submitGuess()">Guess</button>
+                </div>
+            </div>
+
+            <div id="next-draw-container" style="display:none;">
+                <p id="draw-reveal" style="font-size: 1.2rem; margin-bottom: 15px; font-weight: bold;"></p>
+                <button id="btn-next-draw" class="nav-btn" style="width:100%" onclick="nextDrawing()">Suivant</button>
+            </div>
+
+            <div id="draw-recap" style="display:none;">
+                <h3>Bilan du Challenge</h3>
+                <table class="recap-table">
+                    <thead><tr><th>Dessin</th><th>Tentatives</th><th>Points</th></tr></thead>
+                    <tbody id="recap-body-content"></tbody>
+                </table>
+                <div id="final-math-4" style="text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px; border: 1px solid var(--primary); margin-bottom: 20px;"></div>
+                <button class="nav-btn" style="width:100%;" onclick="finishChallenge()">Enregistrer et Quitter</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = parseInt(urlParams.get('id')) || 4;
+        
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        // Liste des réponses attendues
+        const drawAns = ["CHIEN", "MAISON", "SOLEIL", "VOITURE", "AVION"]; 
+        let curD = 0, attD = 0, totG = 0, resD = [], finalGain = 0;
+
+        function submitGuess() {
+            const input = document.getElementById('draw-input');
+            const val = input.value.trim().toUpperCase();
+            if(!val) return;
+
+            attD++; totG++;
+            document.getElementById('total-guesses-tracker').innerText = `Total guesses : ${totG} / 15`;
+            
+            if (val === drawAns[curD]) {
+                endD(true, 50 - (attD-1)*10);
+            } else if (attD >= 5) {
+                endD(false, 0);
+            } else {
+                document.getElementById('potential-points').innerText = 50 - (attD*10);
+                input.value = "";
+                input.focus();
+            }
+        }
+
+        function endD(s, p) {
+            resD.push({a: attD, p: p, success: s});
+            document.getElementById('guess-container').style.display = "none";
+            document.getElementById('next-draw-container').style.display = "block";
+            document.getElementById('draw-reveal').innerHTML = s ? 
+                `<span style="color:var(--success)">Correct ! (+${p} pts)</span>` : 
+                `<span style="color:var(--danger)">Échec ! La réponse était : ${drawAns[curD]}</span>`;
+            document.getElementById('btn-next-draw').innerText = (curD === 4) ? "Voir le bilan" : "Suivant";
+        }
+
+        function nextDrawing() {
+            if (++curD < 5) {
+                attD = 0;
+                document.getElementById('draw-title').innerText = `Dessin N°${curD + 1}`;
+                document.getElementById('potential-points').innerText = "50";
+                const input = document.getElementById('draw-input');
+                input.value = "";
+                document.getElementById('guess-container').style.display = "block";
+                document.getElementById('next-draw-container').style.display = "none";
+                input.focus();
+            } else {
+                calculerBilanFinal();
+            }
+        }
+
+        function calculerBilanFinal() {
+            document.getElementById('draw-recap').style.display = "block";
+            document.getElementById('next-draw-container').style.display = "none";
+            document.getElementById('draw-title').innerText = "Challenge Terminé";
+            
+            let ptsDessins = 0, h = "";
+            resD.forEach((r, i) => { 
+                ptsDessins += r.p; 
+                h += `<tr><td>#${i+1}</td><td>${r.a}</td><td>${r.p}</td></tr>`; 
+            });
+            document.getElementById('recap-body-content').innerHTML = h;
+            
+            // Condition de victoire : Total de guesses <= 15
+            const win = totG <= 15;
+            let gainMise = win ? selectedBet : -selectedBet;
+            finalGain = ptsDessins + gainMise;
+
+            document.getElementById('final-math-4').innerHTML = `
+                Points dessins : +${ptsDessins} pts<br>
+                Total tentatives : ${totG}/15<br>
+                Mise (${selectedBet} pts) : ${win ? '<span style="color:var(--success)">GAGNÉE</span>' : '<span style="color:var(--danger)">PERDUE (Trop de tentatives)</span>'}<hr>
+                <strong>Résultat final : ${finalGain > 0 ? '+' : ''}${finalGain} pts</strong>
+            `;
+
+            // Mise à jour visuelle du score
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + finalGain);
+        }
+
+        function finishChallenge() {
+            localStorage.setItem('score', Math.max(0, scoreInitial + finalGain));
+            
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

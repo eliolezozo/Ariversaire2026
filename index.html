@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Master - Menu Principal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { text-align: center; }
+        .header-main { display: flex; justify-content: center; align-items: center; padding: 20px; position: relative; margin-bottom: 20px; }
+        .score-display-center { font-size: 2rem; color: var(--primary); font-weight: bold; }
+        .btn-roues { position: absolute; right: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 40px auto; }
+        .challenge-card[data-id="10"] { grid-column: 2; }
+        
+        /* Styles pour les états désactivés */
+        .challenge-card.disabled { opacity: 0.3; cursor: not-allowed; filter: grayscale(1); pointer-events: none; }
+        .point-chip.used { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; pointer-events: none; }
+        .point-chip.selected { border: 2px solid var(--primary); background: rgba(99, 102, 241, 0.2); }
+
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+            .challenge-card[data-id="10"] { grid-column: auto; }
+            .btn-roues { position: static; margin-top: 10px; }
+            .header-main { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header-main">
+        <div class="score-display-center">Points : <span id="current-score">0</span></div>
+        <button class="nav-btn btn-roues" onclick="allerAuxRoues()">Accéder aux Roues</button>
+    </header>
+
+    <section class="page active">
+        <h1>Challenges</h1>
+        <p>Mise sélectionnée : <span id="display-bet" style="color:var(--primary); font-weight:bold;">Aucune</span></p>
+        <div class="grid" id="challenge-grid"></div>
+        <div class="points-container" id="points-chips"></div>
+        <button class="nav-btn" style="margin-top:40px; background:var(--danger); font-size: 0.8rem;" onclick="resetGame()">Réinitialiser la partie</button>
+    </section>
+
+    <script>
+        // Initialisation propre des données
+        if (localStorage.getItem('score') === null) localStorage.setItem('score', '0');
+        if (localStorage.getItem('usedBets') === null) localStorage.setItem('usedBets', '[]');
+        if (localStorage.getItem('completedChallenges') === null) localStorage.setItem('completedChallenges', '[]');
+        
+        let score = parseInt(localStorage.getItem('score'));
+        let usedBets = JSON.parse(localStorage.getItem('usedBets'));
+        let completedChallenges = JSON.parse(localStorage.getItem('completedChallenges'));
+        let selectedBet = null;
+
+        document.getElementById('current-score').innerText = score;
+
+        const challenges = [
+            { id: 1, name: "Geoguessr" }, { id: 2, name: "Guess the rent" }, { id: 3, name: "Timeguessr" },
+            { id: 4, name: "Pictionary" }, { id: 7, name: "Wiki Adventure" }, { id: 8, name: "Geoguessr Gaming" }, 
+            { id: 10, name: "Mystère" }
+        ];
+
+        const pointValues = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+        function renderGrid() {
+            const grid = document.getElementById('challenge-grid');
+            grid.innerHTML = '';
+            challenges.forEach(ch => {
+                const isDone = completedChallenges.includes(ch.id);
+                const div = document.createElement('div');
+                div.className = `challenge-card ${isDone ? 'disabled' : ''}`;
+                div.setAttribute('data-id', ch.id);
+                div.innerText = ch.name;
+                div.onclick = () => {
+                    if (isDone || selectedBet === null) return;
+                    // AJOUT de l'ID dans l'URL pour que le challenge sache qui il est
+                    window.location.href = `challenge${ch.id}.html?mise=${selectedBet}&id=${ch.id}`;
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function renderChips() {
+            const container = document.getElementById('points-chips');
+            container.innerHTML = '';
+            pointValues.forEach(val => {
+                const isUsed = usedBets.includes(val);
+                const div = document.createElement('div');
+                div.className = `point-chip ${isUsed ? 'used' : ''} ${selectedBet === val ? 'selected' : ''}`;
+                div.innerText = val + " pts";
+                if (!isUsed) {
+                    div.onclick = () => {
+                        selectedBet = parseInt(val);
+                        document.getElementById('display-bet').innerText = val + " pts";
+                        renderChips();
+                    };
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function allerAuxRoues() {
+            window.location.href = `roues.html?score=${localStorage.getItem('score')}`;
+        }
+
+        function resetGame() { 
+            if(confirm("Réinitialiser toute la progression ?")) { 
+                localStorage.clear(); 
+                localStorage.setItem('score', '0');
+                localStorage.setItem('usedBets', '[]');
+                localStorage.setItem('completedChallenges', '[]');
+                location.reload(); 
+            } 
+        }
+
+        // Exécution initiale
+        renderGrid(); 
+        renderChips();
+    </script>
+</body>
+</html>

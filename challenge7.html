@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 7 - Mystère Witcher</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .question-block {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: left;
+            border-left: 4px solid var(--primary);
+        }
+        .question-block.correct { border-left-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+        .question-block.wrong { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        
+        label { display: block; margin-bottom: 10px; font-weight: bold; }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 5px;
+        }
+        video {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 15px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #7 : Mystère Witcher</h1>
+        
+        <div id="video-area-7">
+            <video id="vid7"><source src="mystere.mp4" type="video/mp4"></video>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button class="nav-btn" onclick="document.getElementById('vid7').play()">Lancer la vidéo</button>
+                <button class="nav-btn" style="background: var(--success);" onclick="startQuiz7()">Répondre au Quiz</button>
+            </div>
+            <p style="margin-top: 15px; opacity: 0.7; font-size: 0.9rem;">Observez bien chaque détail avant de lancer le quiz !</p>
+        </div>
+
+        <div id="quiz-area-7" style="display:none; max-width: 800px; margin: 0 auto;">
+            <form id="form7" autocomplete="off">
+                <div class="question-block" id="q7_1"><label>1. Que mange Ablette au tout début de l'extrait ?</label><input type="text" id="ans7_1"></div>
+                
+                <div class="question-block" id="q7_2">
+                    <label>2. Quelle est la première question que pose Geralt à Ablette ?</label>
+                    <select id="ans7_2"><option value="" selected disabled hidden>-- Choisis une réponse --</option>
+                        <option value="A">Pourquoi as-tu une voix masculine ?</option>
+                        <option value="B">Comment fais-tu pour te retrouver tant de fois sur le toit ?</option>
+                        <option value="C">Pourquoi n'arrives-tu pas à sauter par dessus une clôture ?</option>
+                        <option value="D">Pourquoi viens-tu à moi à chaque fois que je te siffle ?</option>
+                    </select>
+                </div>
+
+                <div class="question-block" id="q7_3"><label>3. Quelle potion Ablette pensait donner à Geralt s'il ne se réveillait pas ?</label><input type="text" id="ans7_3"></div>
+                
+                <div class="question-block" id="q7_4"><label>4. De quelle couleur sont les yeux de Geralt ?</label><input type="text" id="ans7_4"></div>
+                
+                <div class="question-block" id="q7_5">
+                    <label>5. Réaction d'Ablette quand Geralt veut terminer le contrat avant la fin de la potion :</label>
+                    <select id="ans7_5"><option value="" selected disabled hidden>-- Choisis une réponse --</option>
+                        <option value="A">Lui dit d'arrêter les potions louches.</option>
+                        <option value="B">Répond que le monstre ne va pas se tuer tout seul.</option>
+                        <option value="C">Demande s'il peut lui en donner un peu.</option>
+                        <option value="D">S'étonne qu'il ne propose pas une partie de Gwynt.</option>
+                    </select>
+                </div>
+
+                <div class="question-block" id="q7_6"><label>6. Quelles sont les fleurs dans le champ derrière eux ?</label><input type="text" id="ans7_6"></div>
+                
+                <div class="question-block" id="q7_7">
+                    <label>7. Pourquoi Ablette traverse des océans mais bute sur de petits obstacles ?</label>
+                    <select id="ans7_7"><option value="" selected disabled hidden>-- Choisis une réponse --</option>
+                        <option value="A">Je t'en pose des questions ?</option>
+                        <option value="B">Estime-toi heureux que je vienne sur Skellige.</option>
+                        <option value="C">Je ne peux pas voler comme la Chasse Sauvage.</option>
+                        <option value="D">Tout le monde a ses limites.</option>
+                    </select>
+                </div>
+
+                <div class="question-block" id="q7_8">
+                    <label>8. Que demande Ablette à Geralt en chemin ?</label>
+                    <select id="ans7_8"><option value="" selected disabled hidden>-- Choisis une réponse --</option>
+                        <option value="A">De boire un peu de vin.</option>
+                        <option value="B">De ne pas oublier son avoine.</option>
+                        <option value="C">De ne pas écraser de plantes.</option>
+                        <option value="D">D'essayer de manger un trèfle.</option>
+                    </select>
+                </div>
+
+                <div class="question-block" id="q7_9"><label>9. Quel animal voit-on en arrière-plan à la fin ?</label><input type="text" id="ans7_9"></div>
+                
+                <div class="question-block" id="q7_10"><label>10. De quelle couleur est la porte de la chaumière ?</label><input type="text" id="ans7_10"></div>
+            </form>
+
+            <button id="btn-check-7" class="nav-btn" style="background:var(--success); width:100%;" onclick="checkQuiz7()">Vérifier les résultats</button>
+            
+            <div id="recap-7" style="margin-top:20px; font-weight:bold; display:none; background:rgba(0,0,0,0.3); padding:20px; border-radius:10px; border: 1px solid var(--primary);"></div>
+            
+            <button id="btn-home-7" class="nav-btn" style="display:none; width:100%; margin-top:10px;" onclick="finishChallenge()">Enregistrer et Quitter</button>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = 7; 
+
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+        let finalGain = 0;
+
+        function startQuiz7() {
+            document.getElementById('vid7').pause();
+            document.getElementById('video-area-7').style.display = 'none';
+            document.getElementById('quiz-area-7').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function checkQuiz7() {
+            let correct = 0;
+            const clean = (s) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : "";
+            
+            const check = (elId, cond) => {
+                const el = document.getElementById(elId);
+                if(cond) { 
+                    correct++; 
+                    el.parentElement.classList.add("correct"); 
+                } else { 
+                    el.parentElement.classList.add("wrong"); 
+                }
+            };
+
+            check('ans7_1', clean(document.getElementById('ans7_1').value).includes("trefle"));
+            check('ans7_2', document.getElementById('ans7_2').value === "D");
+            check('ans7_3', clean(document.getElementById('ans7_3').value).includes("miel blanc"));
+            check('ans7_4', clean(document.getElementById('ans7_4').value).includes("jaune"));
+            check('ans7_5', document.getElementById('ans7_5').value === "B");
+            check('ans7_6', clean(document.getElementById('ans7_6').value).includes("tournesol"));
+            check('ans7_7', document.getElementById('ans7_7').value === "D");
+            check('ans7_8', document.getElementById('ans7_8').value === "C");
+            check('ans7_9', clean(document.getElementById('ans7_9').value).includes("vache"));
+            check('ans7_10', clean(document.getElementById('ans7_10').value).includes("blanc"));
+
+            const bonus = correct * 5;
+            const win = correct >= 6;
+            finalGain = (win ? selectedBet : -selectedBet) + bonus;
+            
+            document.getElementById('btn-check-7').style.display = 'none';
+            document.getElementById('recap-7').style.display = 'block';
+            document.getElementById('recap-7').innerHTML = `
+                <p>Score : ${correct}/10</p>
+                <p>Bonus Précision : +${bonus} pts</p>
+                <p>Mise (${selectedBet}) : ${win ? '<span style="color:var(--success)">GAGNÉE</span>' : '<span style="color:var(--danger)">PERDUE (< 6 bonnes réponses)</span>'}</p>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+                <p style="font-size:1.2rem;">Total : <strong>${finalGain > 0 ? '+' : ''}${finalGain} pts</strong></p>
+            `;
+            
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + finalGain);
+            document.getElementById('btn-home-7').style.display = 'block';
+        }
+
+        function finishChallenge() {
+            localStorage.setItem('score', Math.max(0, scoreInitial + finalGain));
+            
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

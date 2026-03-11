@@ -1,0 +1,200 @@
+﻿:root {
+    --primary: #6366f1;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --text: #f8fafc;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+.score-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--success);
+}
+
+button.nav-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.2s, transform 0.1s;
+}
+
+button.nav-btn:active {
+    transform: scale(0.98);
+}
+
+.page {
+    width: 90%;
+    max-width: 800px;
+    padding: 20px;
+    text-align: center;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+@media (min-width: 600px) {
+    .grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.challenge-card {
+    background: var(--card-bg);
+    border: 2px solid var(--primary);
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.challenge-card:hover:not(.disabled) {
+    background: rgba(99, 102, 241, 0.1);
+}
+
+.challenge-card.disabled {
+    opacity: 0.5;
+    border-color: #475569;
+    cursor: not-allowed;
+    background: #334155;
+    pointer-events: none; /* Sécurité supplémentaire */
+}
+
+.points-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+}
+
+.point-chip {
+    background: #334155;
+    padding: 10px 15px;
+    border-radius: 50px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: 0.2s;
+}
+
+.point-chip.selected {
+    border-color: var(--success);
+    background: #064e3b;
+    transform: scale(1.1);
+}
+
+.point-chip.used {
+    text-decoration: line-through;
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none; /* Sécurité supplémentaire */
+}
+
+/* Questionnaire & Blocks */
+.question-block {
+    background: #1e293b;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 5px solid var(--primary);
+    text-align: left;
+}
+
+.correct {
+    border-left-color: var(--success) !important;
+    background: #064e3b !important;
+}
+
+.wrong {
+    border-left-color: var(--danger) !important;
+    background: #451a1a !important;
+}
+
+input[type="text"], select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 4px;
+    border: 1px solid #475569;
+    background: #0f172a;
+    color: white;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+
+/* Vidéo */
+video {
+    width: 100%;
+    max-width: 640px;
+    border-radius: 10px;
+    background: black;
+}
+
+/* Tableaux Récapitulatifs */
+.recap-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: #0f172a;
+}
+
+.recap-table th, .recap-table td {
+    padding: 12px;
+    border: 1px solid #475569;
+    text-align: center;
+}
+
+.recap-table th {
+    background: var(--card-bg);
+    color: var(--primary);
+}
+
+/* Nouvelles utilités pour la gestion du score et du flux */
+.nav-btn.btn-roues {
+    background: var(--success); /* Différencier un peu le bouton roues */
+}
+
+.hidden {
+    display: none;
+}

@@ -1,0 +1,213 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Challenge 3 - Timeguessr</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .consigne-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+            margin-bottom: 30px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        .round-container {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .time-img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--primary);
+        }
+        .input-year {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: #1a1a1a;
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+        .recap-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            border-left: 5px solid transparent;
+        }
+        .thumb-recap {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .res-correct { color: #10b981; font-weight: bold; }
+        .txt-perfect { color: #10b981; }
+        .txt-close { color: #f59e0b; }
+        .txt-wrong { color: #ef4444; }
+        .recap-details { flex-grow: 1; font-size: 0.95rem; text-align: left; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="score-display">Points : <span id="current-score">0</span></div>
+    </header>
+
+    <section class="page active">
+        <h1>Challenge #3 : Timeguessr</h1>
+
+        <div id="game-content">
+            <div class="consigne-box">
+                <strong>Consigne :</strong> Pour remporter ce challenge, trouve exactement la bonne date d'au moins une photo ! <br>
+                <span style="color:var(--primary)">• Date exacte = +40 points</span><br>
+                <span>• 1 an d'écart = +30 points</span><br>
+                <span>• 2 ans d'écart = +20 points</span><br>
+                <span>• 3 ans d'écart = +10 points</span><br>
+                <span style="color:var(--danger)">• Plus de 3 ans d'écart = +0 points</span>
+            </div>
+
+            <div class="round-container">
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">Round 1</div>
+                <img src="timeguessr1.jpg" class="time-img">
+                <input type="number" id="year-1" class="input-year" placeholder="Année ?">
+            </div>
+            <div class="round-container">
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">Round 2</div>
+                <img src="timeguessr2.jpg" class="time-img">
+                <input type="number" id="year-2" class="input-year" placeholder="Année ?">
+            </div>
+            <div class="round-container">
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">Round 3</div>
+                <img src="timeguessr3.jpg" class="time-img">
+                <input type="number" id="year-3" class="input-year" placeholder="Année ?">
+            </div>
+            <div class="round-container">
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">Round 4</div>
+                <img src="timeguessr4.jpg" class="time-img">
+                <input type="number" id="year-4" class="input-year" placeholder="Année ?">
+            </div>
+            <div class="round-container">
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">Round 5</div>
+                <img src="timeguessr5.jpg" class="time-img">
+                <input type="number" id="year-5" class="input-year" placeholder="Année ?">
+            </div>
+            
+            <button class="nav-btn" style="width:100%; background:var(--success); margin-bottom:40px;" onclick="validerTimeguessr()">Valider les 5 rounds</button>
+        </div>
+
+        <div id="recap-area" style="display:none;">
+            <div style="background: var(--card-bg); padding: 20px; border-radius: 15px; border: 2px solid var(--primary);">
+                <h3>Récapitulatif des Rounds</h3>
+                <div id="final-list-3"></div>
+                <div id="final-summary-3" style="margin-top:20px; padding:15px; background:rgba(0,0,0,0.4); border-radius:10px; text-align:left;"></div>
+                <button class="nav-btn" style="width:100%; margin-top:20px;" onclick="quitterChallenge()">Enregistrer et retourner au menu</button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedBet = parseInt(urlParams.get('mise')) || 0;
+        const challengeId = parseInt(urlParams.get('id')) || 3;
+
+        let scoreInitial = parseInt(localStorage.getItem('score')) || 0;
+        document.getElementById('current-score').innerText = scoreInitial;
+
+        const solutions = [1945, 1989, 1963, 1934, 2016]; 
+        let totalGainChallenge = 0;
+
+        function validerTimeguessr() {
+            let ptsBonusTotal = 0;
+            let aFaitUnPerfect = false;
+            let listHTML = "";
+
+            for (let i = 1; i <= 5; i++) {
+                const guessInput = document.getElementById(`year-${i}`).value;
+                const guess = parseInt(guessInput);
+                const soluce = solutions[i-1];
+                const diff = Math.abs(guess - soluce);
+                
+                let ptsRound = 0;
+                let colorClass = "txt-wrong";
+                let borderColor = "#ef4444";
+
+                if (guessInput !== "" && !isNaN(guess)) {
+                    if (diff === 0) {
+                        ptsRound = 40;
+                        aFaitUnPerfect = true;
+                        colorClass = "txt-perfect";
+                        borderColor = "#10b981";
+                    } else if (diff <= 3) {
+                        ptsRound = (4 - diff) * 10;
+                        colorClass = "txt-close";
+                        borderColor = "#f59e0b";
+                    }
+                }
+
+                ptsBonusTotal += ptsRound;
+
+                listHTML += `
+                    <div class="recap-row" style="border-left-color: ${borderColor}">
+                        <img src="timeguessr${i}.jpg" class="thumb-recap">
+                        <div class="recap-details">
+                            <strong>Photo ${i}</strong><br>
+                            Solution : <span class="res-correct">${soluce}</span> | 
+                            Guess : <span class="${colorClass}">${isNaN(guess) ? 'Aucun' : guess}</span>
+                        </div>
+                        <div style="font-weight:bold; color:var(--primary); min-width:60px; text-align:right;">+${ptsRound} pts</div>
+                    </div>
+                `;
+            }
+
+            // Calcul gain : Mise gagnée si au moins 1 Perfect
+            let gainMise = aFaitUnPerfect ? selectedBet : -selectedBet;
+            totalGainChallenge = ptsBonusTotal + gainMise;
+
+            document.getElementById('game-content').style.display = 'none';
+            document.getElementById('recap-area').style.display = 'block';
+            document.getElementById('final-list-3').innerHTML = listHTML;
+
+            document.getElementById('final-summary-3').innerHTML = `
+                <p>Mise engagée : ${selectedBet} pts<br>
+                Statut : <strong>${aFaitUnPerfect ? '<span style="color:#10b981">REMPORTÉE (+'+selectedBet+')</span>' : '<span style="color:#ef4444">PERDUE (-'+selectedBet+')</span>'}</strong></p>
+                <p>Bonus Proximité cumulés : <strong>+${ptsBonusTotal} pts</strong></p>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+                <p style="font-size:1.2rem; text-align:center; margin:0;">Total : <strong>${totalGainChallenge > 0 ? '+' : ''}${totalGainChallenge} pts</strong></p>
+            `;
+
+            // Mise à jour visuelle immédiate du score
+            document.getElementById('current-score').innerText = Math.max(0, scoreInitial + totalGainChallenge);
+        }
+
+        function quitterChallenge() {
+            localStorage.setItem('score', Math.max(0, scoreInitial + totalGainChallenge));
+            
+            let comp = JSON.parse(localStorage.getItem('completedChallenges')) || [];
+            if (!comp.includes(challengeId)) comp.push(challengeId);
+            localStorage.setItem('completedChallenges', JSON.stringify(comp));
+            
+            let used = JSON.parse(localStorage.getItem('usedBets')) || [];
+            if (!used.includes(selectedBet)) used.push(selectedBet);
+            localStorage.setItem('usedBets', JSON.stringify(used));
+            
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
