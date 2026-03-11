@@ -2,102 +2,45 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>La Taverne des Roues</title>
+    <title>Les Roues - KCD Adventure</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .stats-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            padding: 15px 25px;
-            border-radius: 10px;
-            border: 1px solid var(--primary);
-            min-width: 150px;
-        }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--success); }
-        .stat-label { font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; }
-
-        .wheels-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .wheel-box {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: transform 0.3s;
-        }
-        .wheel-box:hover { transform: translateY(-5px); border-color: var(--primary); }
-        .cost-tag { color: var(--primary); font-weight: bold; margin-bottom: 15px; }
-        
-        #log-messages {
-            margin-top: 30px;
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            height: 100px;
-            overflow-y: auto;
-            font-size: 0.9rem;
-        }
-        .log-entry { margin-bottom: 5px; border-bottom: 1px dotted rgba(255,255,255,0.1); }
-    </style>
 </head>
 <body>
     <header>
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-label">Ton Trésor</div>
-                <div class="stat-value"><span id="display-cash">0.00</span>€</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Points restants</div>
-                <div class="stat-value"><span id="display-score">0</span> Pts</div>
-            </div>
+        <div class="score-display">
+            Points : <span id="current-score">0</span> | 
+            Cagnotte : <span id="current-cash">0.00</span>€
         </div>
     </header>
 
     <section class="page active">
         <h1>Les Roues de la Fortune</h1>
-        
-        <div class="wheels-grid">
-            <div class="wheel-box">
-                <h2 style="color: #94a3b8;">Roue du Paysan</h2>
-                <p class="cost-tag">Coût : 30 Pts</p>
-                <p style="font-size: 0.8rem; margin-bottom: 15px;">Gains modestes, risques faibles.</p>
-                <button class="nav-btn" style="width:100%" onclick="spin('paysan')">Tourner</button>
+
+        <div class="wheel-container">
+            <div class="wheel-card">
+                <h3>Roue du Paysan</h3>
+                <p>Coût : 30 pts</p>
+                <button class="nav-btn" onclick="spin('paysan')">Tourner la roue</button>
             </div>
 
-            <div class="wheel-box" style="border-color: var(--primary);">
-                <h2 style="color: var(--primary);">Roue du Chevalier</h2>
-                <p class="cost-tag">Coût : 100 Pts</p>
-                <p style="font-size: 0.8rem; margin-bottom: 15px;">Le cœur du jeu. Équilibrée.</p>
-                <button class="nav-btn" style="width:100%; background: var(--primary);" onclick="spin('chevalier')">Tourner</button>
+            <div class="wheel-card">
+                <h3>Roue du Chevalier</h3>
+                <p>Coût : 100 pts</p>
+                <button class="nav-btn" onclick="spin('chevalier')">Tourner la roue</button>
             </div>
 
-            <div class="wheel-box" style="border-color: #fbbf24;">
-                <h2 style="color: #fbbf24;">Roue du Seigneur</h2>
-                <p class="cost-tag">Coût : 250 Pts</p>
-                <p style="font-size: 0.8rem; margin-bottom: 15px;">Haute volatilité. Jackpot ou ruine.</p>
-                <button class="nav-btn" style="width:100%; background: #fbbf24; color: black;" onclick="spin('seigneur')">Tourner</button>
+            <div class="wheel-card">
+                <h3>Roue du Seigneur</h3>
+                <p>Coût : 250 pts</p>
+                <button class="nav-btn" onclick="spin('seigneur')">Tourner la roue</button>
             </div>
         </div>
 
-        <div id="log-messages">
-            <div class="log-entry">Bienvenue à la taverne... Tente ta chance !</div>
-        </div>
-
-        <button class="nav-btn" style="margin-top: 30px; width: 100%;" onclick="window.location.href='index.html'">Retour au menu</button>
+        <button class="nav-btn" style="margin-top: 20px;" onclick="window.location.href='index.html'">Retour au menu</button>
     </section>
 
     <script>
-        // CONFIGURATION DES CASES
+        // Configuration des segments demandée
         const wheels = {
             paysan: {
                 cost: 30,
@@ -108,21 +51,21 @@
                     { type: 'cash', val: 0.5,  label: '+0.50€' },
                     { type: 'cash', val: 1.0,  label: '+1.00€' },
                     { type: 'cash', val: 2.0,  label: '+2.00€' },
-                    { type: 'pts',  val: 30,   label: '+30 Pts' },
-                    { type: 'pts',  val: 60,   label: '+60 Pts' }
+                    { type: 'pts',  val: 30,   label: '+30 pts' },
+                    { type: 'pts',  val: 60,   label: '+60 pts' }
                 ]
             },
             chevalier: {
                 cost: 100,
                 segments: [
                     { type: 'cash', val: -1.0, label: '-1.00€' },
-                    { type: 'pts',  val: -50,  label: '-50 Pts' },
+                    { type: 'pts',  val: -50,  label: '-50 pts' },
                     { type: 'cash', val: 0.2,  label: '+0.20€' },
                     { type: 'cash', val: 0.5,  label: '+0.50€' },
                     { type: 'cash', val: 1.0,  label: '+1.00€' },
                     { type: 'cash', val: 2.0,  label: '+2.00€' },
                     { type: 'cash', val: 5.0,  label: '+5.00€' },
-                    { type: 'pts',  val: 150,  label: '+150 Pts' }
+                    { type: 'pts',  val: 150,  label: '+150 pts' }
                 ]
             },
             seigneur: {
@@ -130,8 +73,8 @@
                 segments: [
                     { type: 'cash', val: -4.0, label: '-4.00€' },
                     { type: 'cash', val: -2.0, label: '-2.00€' },
-                    { type: 'pts',  val: 50,   label: '+50 Pts' },
-                    { type: 'pts',  val: 150,  label: '+150 Pts' },
+                    { type: 'pts',  val: 50,   label: '+50 pts' },
+                    { type: 'pts',  val: 150,  label: '+150 pts' },
                     { type: 'cash', val: 0.5,  label: '+0.50€' },
                     { type: 'cash', val: 2.0,  label: '+2.00€' },
                     { type: 'cash', val: 5.0,  label: '+5.00€' },
@@ -143,17 +86,8 @@
         function updateDisplay() {
             const score = localStorage.getItem('score') || 0;
             const cash = parseFloat(localStorage.getItem('cash')) || 0;
-            document.getElementById('display-score').innerText = score;
-            document.getElementById('display-cash').innerText = cash.toFixed(2);
-        }
-
-        function addLog(msg, color = "white") {
-            const log = document.getElementById('log-messages');
-            const entry = document.createElement('div');
-            entry.className = "log-entry";
-            entry.style.color = color;
-            entry.innerText = msg;
-            log.prepend(entry);
+            document.getElementById('current-score').innerText = score;
+            document.getElementById('current-cash').innerText = cash.toFixed(2);
         }
 
         function spin(tier) {
@@ -162,35 +96,32 @@
             const config = wheels[tier];
 
             if (score < config.cost) {
-                addLog("Pas assez de points pour cette roue !", "#ef4444");
+                alert("Pas assez de points !");
                 return;
             }
 
-            // Paiement
+            // Déduction du coût
             score -= config.cost;
-            
+
             // Tirage
             const result = config.segments[Math.floor(Math.random() * config.segments.length)];
-            
-            // Application
-            let logColor = "#10b981"; // Vert par défaut
+
+            // Résultat
             if (result.type === 'cash') {
                 cash += result.val;
-                if (result.val < 0) logColor = "#ef4444";
             } else {
                 score += result.val;
-                if (result.val < 0) logColor = "#ef4444";
             }
 
             // Sauvegarde
             localStorage.setItem('score', Math.max(0, score));
             localStorage.setItem('cash', cash.toFixed(2));
-            
-            addLog(`[${tier.toUpperCase()}] Résultat : ${result.label}`, logColor);
+
             updateDisplay();
+            alert("Résultat : " + result.label);
         }
 
-        // Init au chargement
+        // Initialisation
         updateDisplay();
     </script>
 </body>
