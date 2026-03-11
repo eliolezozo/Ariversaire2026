@@ -2,137 +2,172 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Challenge 11 - Les Roues</title>
+    <title>Les Roues du Royaume</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Maintien de ton style d'origine */
-        .wheel-container {
-            display: flex;
-            justify-content: space-around;
-            gap: 20px;
-            margin-top: 50px;
-        }
-        .wheel-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--primary);
-            width: 30%;
-            text-align: center;
-        }
+        body { text-align: center; background: #0f0f0f; color: white; margin: 0; padding: 10px; font-family: sans-serif; overflow: hidden; }
+        .header-center { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; padding-top: 10px; }
+        .score-display-big { font-size: 2.2rem; color: var(--primary); font-weight: bold; }
+        .wheels-wrapper { display: flex; justify-content: center; align-items: flex-end; gap: 20px; margin-bottom: 20px; }
+        .wheel-box { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; align-items: center; }
+        .box-paysan { width: 220px; } .box-chevalier { width: 280px; border-color: var(--primary); } .box-seigneur { width: 340px; border-color: #ffd700; }
+        .canvas-container { position: relative; margin: 10px auto; }
+        canvas { border-radius: 50%; border: 3px solid #333; transition: transform 1s cubic-bezier(0.1, 0, 0.2, 1); background: #222; }
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-top: 20px solid white; z-index: 10; filter: drop-shadow(0 0 3px black); }
+        .cagnotte-container { background: #1a1a1a; padding: 10px 40px; border-radius: 15px; border: 2px solid var(--success); display: inline-block; position: relative; }
+        .cagnotte-val { font-size: 2.2rem; color: var(--success); font-weight: bold; }
+        .spin-btn { width: 100%; padding: 10px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; color: white; margin-top: 10px; }
+        .spin-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        .reset-cagnotte { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; margin-top: 10px; opacity: 0.6; }
+        .reset-cagnotte:hover { opacity: 1; }
+        p { margin: 2px 0; color: #aaa; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="score-display">
-            Points : <span id="current-score">0</span> | 
-            Cagnotte : <span id="current-cash">0.00</span>€
+
+    <button class="nav-btn" onclick="retourMenu()" style="position: absolute; left: 20px; top: 20px;">Retour</button>
+
+    <div class="header-center">
+        <div class="score-display-big">Points : <span id="current-score">0</span></div>
+    </div>
+
+    <div class="wheels-wrapper">
+        <div class="wheel-box box-paysan">
+            <h3 style="color: #8b4513;">Paysan</h3><p>30 pts</p>
+            <div class="canvas-container"><div class="pointer"></div><canvas id="canvasPaysan" width="160" height="160"></canvas></div>
+            <button id="btnPaysan" class="spin-btn" style="background: #8b4513;" onclick="spin('paysan')">LANCER</button>
         </div>
-    </header>
-
-    <section class="page active">
-        <h1>Les Roues de la Fortune</h1>
-
-        <div class="wheel-container">
-            <div class="wheel-card">
-                <h3>Roue du Paysan</h3>
-                <p>Coût : 30 pts</p>
-                <button class="nav-btn" onclick="spin('paysan')">Tourner la roue</button>
-            </div>
-
-            <div class="wheel-card">
-                <h3>Roue du Chevalier</h3>
-                <p>Coût : 100 pts</p>
-                <button class="nav-btn" onclick="spin('chevalier')">Tourner la roue</button>
-            </div>
-
-            <div class="wheel-card">
-                <h3>Roue du Seigneur</h3>
-                <p>Coût : 250 pts</p>
-                <button class="nav-btn" onclick="spin('seigneur')">Tourner la roue</button>
-            </div>
+        <div class="wheel-box box-chevalier">
+            <h3 style="color: var(--primary);">Chevalier</h3><p>100 pts</p>
+            <div class="canvas-container"><div class="pointer"></div><canvas id="canvasChevalier" width="220" height="220"></canvas></div>
+            <button id="btnChevalier" class="spin-btn" style="background: var(--primary);" onclick="spin('chevalier')">LANCER</button>
         </div>
+        <div class="wheel-box box-seigneur">
+            <h3 style="color: #ffd700;">Seigneur</h3><p>250 pts</p>
+            <div class="canvas-container"><div class="pointer"></div><canvas id="canvasSeigneur" width="280" height="280"></canvas></div>
+            <button id="btnSeigneur" class="spin-btn" style="background: #ffd700; color: black;" onclick="spin('seigneur')">LANCER</button>
+        </div>
+    </div>
 
-        <button class="nav-btn" style="margin-top: 40px; width: 100%;" onclick="window.location.href='index.html'">Retour au menu</button>
-    </section>
+    <div class="cagnotte-container">
+        <div style="font-size: 0.8rem; color: #aaa;">CAGNOTTE</div>
+        <div class="cagnotte-val"><span id="cagnotte-amount">0.00</span>€</div><br>
+        <button class="reset-cagnotte" onclick="resetCagnotte()">Réinitialiser la cagnotte</button>
+    </div>
 
     <script>
-        const wheels = {
-            paysan: {
-                cost: 30,
-                segments: [
-                    { type: 'cash', val: -0.3, label: '-0.30€' },
-                    { type: 'cash', val: -0.1, label: '-0.10€' },
-                    { type: 'cash', val: 0.3,  label: '+0.30€' },
-                    { type: 'cash', val: 0.5,  label: '+0.50€' },
-                    { type: 'cash', val: 1.0,  label: '+1.00€' },
-                    { type: 'cash', val: 2.0,  label: '+2.00€' },
-                    { type: 'pts',  val: 30,   label: '+30 pts' },
-                    { type: 'pts',  val: 60,   label: '+60 pts' }
-                ]
+        let currentScore = parseInt(localStorage.getItem('score')) || 0;
+        let currentCagnotte = parseFloat(localStorage.getItem('cagnotte_privee')) || 0;
+
+        const C_RED = "#f44336"; const C_ORANGE = "#ff9800"; const C_GREEN = "#4caf50"; const C_BLUE = "#2196f3";
+
+        const config = {
+            paysan: { 
+                canvas: 'canvasPaysan', btn: 'btnPaysan', cost: 30, size: 160, 
+                values: [-0.3, -0.1, 0.3, 0.5, 1, 2, "30pts", "60pts"], 
+                labels: ["-0.3€", "-0.1€", "+0.3€", "+0.5€", "+1€", "+2€", "+30 pts", "+60 pts"],
+                colors: [C_RED, C_RED, C_ORANGE, C_ORANGE, C_GREEN, C_GREEN, C_BLUE, C_BLUE] 
             },
-            chevalier: {
-                cost: 100,
-                segments: [
-                    { type: 'cash', val: -1.0, label: '-1.00€' },
-                    { type: 'pts',  val: -50,  label: '-50 pts' },
-                    { type: 'cash', val: 0.2,  label: '+0.20€' },
-                    { type: 'cash', val: 0.5,  label: '+0.50€' },
-                    { type: 'cash', val: 1.0,  label: '+1.00€' },
-                    { type: 'cash', val: 2.0,  label: '+2.00€' },
-                    { type: 'cash', val: 5.0,  label: '+5.00€' },
-                    { type: 'pts',  val: 150,  label: '+150 pts' }
-                ]
+            chevalier: { 
+                canvas: 'canvasChevalier', btn: 'btnChevalier', cost: 100, size: 220, 
+                values: [-1, "-50pts", 0.2, 0.5, 1, 2, 5, "150pts"], 
+                labels: ["-1€", "-50 pts", "+0.2€", "+0.5€", "+1€", "+2€", "+5€", "+150 pts"],
+                colors: [C_RED, C_RED, C_ORANGE, C_ORANGE, C_ORANGE, C_ORANGE, C_GREEN, C_BLUE] 
             },
-            seigneur: {
-                cost: 250,
-                segments: [
-                    { type: 'cash', val: -4.0, label: '-4.00€' },
-                    { type: 'cash', val: -2.0, label: '-2.00€' },
-                    { type: 'pts',  val: 50,   label: '+50 pts' },
-                    { type: 'pts',  val: 150,  label: '+150 pts' },
-                    { type: 'cash', val: 0.5,  label: '+0.50€' },
-                    { type: 'cash', val: 2.0,  label: '+2.00€' },
-                    { type: 'cash', val: 5.0,  label: '+5.00€' },
-                    { type: 'cash', val: 8.0,  label: '+8.00€' }
-                ]
+            seigneur: { 
+                canvas: 'canvasSeigneur', btn: 'btnSeigneur', cost: 250, size: 280, 
+                values: [-4, -2, "50pts", "150pts", 0.5, 2, 5, 8], 
+                labels: ["-4€", "-2€", "+50 pts", "+150 pts", "+0.5€", "+2€", "+5€", "+8€"],
+                colors: [C_RED, C_RED, C_BLUE, C_BLUE, C_ORANGE, C_ORANGE, C_GREEN, C_GREEN] 
             }
         };
 
-        function updateDisplay() {
-            const score = localStorage.getItem('score') || 0;
-            const cash = parseFloat(localStorage.getItem('cash')) || 0;
-            document.getElementById('current-score').innerText = score;
-            document.getElementById('current-cash').innerText = cash.toFixed(2);
+        let rotations = { paysan: 0, chevalier: 0, seigneur: 0 };
+        let isSpinning = false;
+
+        function updateUI() {
+            document.getElementById('current-score').innerText = currentScore;
+            document.getElementById('cagnotte-amount').innerText = currentCagnotte.toFixed(2);
+            localStorage.setItem('score', currentScore);
+            localStorage.setItem('cagnotte_privee', currentCagnotte);
+            Object.keys(config).forEach(k => {
+                document.getElementById(config[k].btn).disabled = (currentScore < config[k].cost || isSpinning);
+            });
         }
 
-        function spin(tier) {
-            let score = parseInt(localStorage.getItem('score')) || 0;
-            let cash = parseFloat(localStorage.getItem('cash')) || 0;
-            const config = wheels[tier];
+        function drawWheel(type) {
+            const c = config[type];
+            const canvas = document.getElementById(c.canvas);
+            const ctx = canvas.getContext('2d');
+            const num = c.labels.length;
+            const arc = (2 * Math.PI) / num;
+            const center = c.size / 2;
 
-            if (score < config.cost) {
-                alert("Pas assez de points !");
-                return;
-            }
+            ctx.clearRect(0,0,c.size,c.size);
 
-            score -= config.cost;
-            const result = config.segments[Math.floor(Math.random() * config.segments.length)];
-
-            if (result.type === 'cash') {
-                cash += result.val;
-            } else {
-                score += result.val;
-            }
-
-            localStorage.setItem('score', Math.max(0, score));
-            localStorage.setItem('cash', cash.toFixed(2));
-
-            updateDisplay();
-            alert("Résultat : " + result.label);
+            c.labels.forEach((label, i) => {
+                ctx.beginPath(); 
+                ctx.fillStyle = c.colors[i]; 
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, center, i * arc, (i + 1) * arc); 
+                ctx.fill();
+                ctx.save(); 
+                ctx.translate(center, center); 
+                ctx.rotate(i * arc + arc / 2);
+                ctx.textAlign = "right"; 
+                ctx.fillStyle = "white";
+                ctx.font = `bold ${c.size/14}px Arial`; 
+                ctx.fillText(label, center - 10, 5); 
+                ctx.restore();
+            });
         }
 
-        updateDisplay();
+        function spin(type) {
+            if (isSpinning || currentScore < config[type].cost) return;
+            isSpinning = true;
+            
+            const c = config[type];
+            currentScore -= c.cost;
+            updateUI();
+
+            const randomRotation = Math.floor(Math.random() * 360) + 1800; // 5 tours min
+            rotations[type] += randomRotation;
+            document.getElementById(c.canvas).style.transform = `rotate(${rotations[type]}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                const actualDeg = rotations[type] % 360;
+                // Calcul de l'index : 270 deg est le haut du canvas
+                const index = Math.floor(((360 - actualDeg + 270) % 360) / (360 / c.values.length));
+                const win = c.values[index];
+
+                // Logique de gain : Points vs Cash
+                if (typeof win === "string" && win.includes("pts")) {
+                    currentScore += parseInt(win);
+                } else {
+                    currentCagnotte += win;
+                }
+
+                if (currentCagnotte < 0) currentCagnotte = 0;
+                if (currentScore < 0) currentScore = 0;
+                
+                updateUI();
+            }, 1050);
+        }
+
+        function resetCagnotte() {
+            if(confirm("Vider la cagnotte ?")) {
+                currentCagnotte = 0;
+                updateUI();
+            }
+        }
+
+        function retourMenu() { window.location.href = 'index.html'; }
+
+        window.onload = () => {
+            updateUI();
+            drawWheel('paysan'); drawWheel('chevalier'); drawWheel('seigneur');
+        };
     </script>
 </body>
 </html>
