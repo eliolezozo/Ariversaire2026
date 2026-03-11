@@ -155,7 +155,7 @@
             check('ans7_9', clean(document.getElementById('ans7_9').value).includes("vache"));
             check('ans7_10', clean(document.getElementById('ans7_10').value).includes("blanc"));
 
-            const bonus = correct * 5;
+            const bonus = correct * 10;
             const win = correct >= 6;
             finalGain = (win ? selectedBet : -selectedBet) + bonus;
             
@@ -188,4 +188,5 @@
         }
     </script>
 </body>
+
 </html>
